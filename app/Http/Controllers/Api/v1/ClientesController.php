@@ -87,40 +87,37 @@ class ClientesController extends Controller
      * Actualiza los datos de un cliente.
      */
     public function update(Request $request, $id)
-    {
-        try {
-            $cliente = Cliente::findOrFail($id);
+{
+    try {
+        $validatedData = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'telefono' => 'required|string|max:15',
+        ]);
 
-            $request->validate([
-                'nombre' => 'required|string|min:3|max:100',
-                'email' => 'required|email|unique:clientes,email,' . $id . '|max:100',
-                'telefono' => 'nullable|string|max:20'
-            ]);
+        $cliente = Cliente::findOrFail($id);
+        $cliente->update($validatedData);
 
-            $cliente->update($request->all());
-
-            return response()->json([
-                "message" => "Cliente actualizado correctamente",
-                "status" => 200,
-                "data" => $cliente
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                "message" => "Cliente no encontrado",
-                "status" => 404
-            ], 404);
-        } catch (ValidationException $e) {
-            return response()->json([
-                "message" => $e->getMessage(),
-                "status" => 422
-            ], 422);
-        } catch (Exception $e) {
-            return response()->json([
-                "message" => "Error al actualizar el cliente",
-                "status" => 500
-            ], 500);
-        }
+        return response()->json([
+            "message" => "Cliente actualizado correctamente",
+            "status" => 200,
+            "data" => $cliente
+        ]);
+    } catch (ValidationException $e) {
+        return response()->json([
+            "message" => $e->getMessage(),
+            "status" => 422
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            "message" => "Error al actualizar el cliente",
+            "status" => 500,
+            // Extra opcional: ayuda a debuggear
+            "error" => $e->getMessage()
+        ]);
     }
+}
+
 
     /**
      * Elimina un cliente de la base de datos.

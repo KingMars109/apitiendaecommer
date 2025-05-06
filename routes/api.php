@@ -2,6 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\CarteraElectronicaController;
+use App\Http\Controllers\Api\V1\TransaccionController;
+use App\Http\Controllers\Api\V1\MetodoPagoController;
+
 use App\Http\Controllers\Api\V1\AuthController;
 
 Route::prefix('v1')->group(function () {
@@ -48,4 +52,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         // Otras rutas protegidas aquí
     });
+
+    Route::apiResource('carteras-electronicas', CarteraElectronicaController::class);
+    Route::apiResource('transacciones', TransaccionController::class);
+    Route::apiResource('metodos-pago', MetodoPagoController::class);
 });
