@@ -7,12 +7,25 @@ use App\Models\CarteraElectronica;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class CarteraElectronicaController extends Controller
 {
     public function index()
     {
-        return response()->json(CarteraElectronica::all(), 200);
+        try {
+            $carteras = CarteraElectronica::all();
+            return response()->json([
+                "message" => "Listado de carteras electrónicas",
+                "status" => 200,
+                "data" => $carteras
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al obtener las carteras electrónicas",
+                "status" => 500
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -33,10 +46,19 @@ class CarteraElectronicaController extends Controller
 
             return response()->json([
                 "message" => "Cartera electrónica creada correctamente",
-                "cartera" => $cartera
+                "status" => 201,
+                "data" => $cartera
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear la cartera electrónica",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -44,9 +66,16 @@ class CarteraElectronicaController extends Controller
     {
         try {
             $cartera = CarteraElectronica::findOrFail($id);
-            return response()->json($cartera, 200);
+            return response()->json([
+                "message" => "Información de la cartera electrónica",
+                "status" => 200,
+                "data" => $cartera
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Cartera electrónica no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Cartera electrónica no encontrada",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -65,12 +94,24 @@ class CarteraElectronicaController extends Controller
 
             return response()->json([
                 "message" => "Cartera electrónica actualizada correctamente",
-                "cartera" => $cartera
+                "status" => 200,
+                "data" => $cartera
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Cartera electrónica no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Cartera electrónica no encontrada",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar la cartera electrónica",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -80,9 +121,20 @@ class CarteraElectronicaController extends Controller
             $cartera = CarteraElectronica::findOrFail($id);
             $cartera->delete();
 
-            return response()->json(["message" => "Cartera electrónica eliminada correctamente"], 200);
+            return response()->json([
+                "message" => "Cartera electrónica eliminada correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Cartera electrónica no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Cartera electrónica no encontrada",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar la cartera electrónica",
+                "status" => 500
+            ], 500);
         }
     }
 }

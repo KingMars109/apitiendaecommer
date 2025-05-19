@@ -7,12 +7,25 @@ use App\Models\MetodoPago;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class MetodoPagoController extends Controller
 {
     public function index()
     {
-        return response()->json(MetodoPago::all(), 200);
+        try {
+            $metodosPago = MetodoPago::all();
+            return response()->json([
+                "message" => "Listado de métodos de pago",
+                "status" => 200,
+                "data" => $metodosPago
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al obtener los métodos de pago",
+                "status" => 500
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -29,10 +42,19 @@ class MetodoPagoController extends Controller
 
             return response()->json([
                 "message" => "Método de pago creado correctamente",
-                "metodo_pago" => $metodoPago
+                "status" => 201,
+                "data" => $metodoPago
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear el método de pago",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -40,9 +62,16 @@ class MetodoPagoController extends Controller
     {
         try {
             $metodoPago = MetodoPago::findOrFail($id);
-            return response()->json($metodoPago, 200);
+            return response()->json([
+                "message" => "Información del método de pago",
+                "status" => 200,
+                "data" => $metodoPago
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Método de pago no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Método de pago no encontrado",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -62,12 +91,24 @@ class MetodoPagoController extends Controller
 
             return response()->json([
                 "message" => "Método de pago actualizado correctamente",
-                "metodo_pago" => $metodoPago
+                "status" => 200,
+                "data" => $metodoPago
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Método de pago no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Método de pago no encontrado",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar el método de pago",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -77,9 +118,20 @@ class MetodoPagoController extends Controller
             $metodoPago = MetodoPago::findOrFail($id);
             $metodoPago->delete();
 
-            return response()->json(["message" => "Método de pago eliminado correctamente"], 200);
+            return response()->json([
+                "message" => "Método de pago eliminado correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Método de pago no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Método de pago no encontrado",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar el método de pago",
+                "status" => 500
+            ], 500);
         }
     }
 }

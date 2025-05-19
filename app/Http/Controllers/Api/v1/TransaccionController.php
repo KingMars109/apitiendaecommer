@@ -7,12 +7,25 @@ use App\Models\Transaccion;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class TransaccionController extends Controller
 {
     public function index()
     {
-        return response()->json(Transaccion::all(), 200);
+        try {
+            $transacciones = Transaccion::all();
+            return response()->json([
+                "message" => "Listado de transacciones",
+                "status" => 200,
+                "data" => $transacciones
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al obtener las transacciones",
+                "status" => 500
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -37,10 +50,19 @@ class TransaccionController extends Controller
 
             return response()->json([
                 "message" => "Transacción creada correctamente",
-                "transaccion" => $transaccion
+                "status" => 201,
+                "data" => $transaccion
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear la transacción",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -48,9 +70,16 @@ class TransaccionController extends Controller
     {
         try {
             $transaccion = Transaccion::findOrFail($id);
-            return response()->json($transaccion, 200);
+            return response()->json([
+                "message" => "Información de la transacción",
+                "status" => 200,
+                "data" => $transaccion
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Transacción no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Transacción no encontrada",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -71,12 +100,24 @@ class TransaccionController extends Controller
 
             return response()->json([
                 "message" => "Transacción actualizada correctamente",
-                "transaccion" => $transaccion
+                "status" => 200,
+                "data" => $transaccion
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Transacción no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Transacción no encontrada",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar la transacción",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -86,9 +127,20 @@ class TransaccionController extends Controller
             $transaccion = Transaccion::findOrFail($id);
             $transaccion->delete();
 
-            return response()->json(["message" => "Transacción eliminada correctamente"], 200);
+            return response()->json([
+                "message" => "Transacción eliminada correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Transacción no encontrada", "status" => 404], 404);
+            return response()->json([
+                "message" => "Transacción no encontrada",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar la transacción",
+                "status" => 500
+            ], 500);
         }
     }
 }

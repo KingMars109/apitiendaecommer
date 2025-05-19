@@ -7,6 +7,7 @@ use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class ProveedorController extends Controller
 {
@@ -18,8 +19,8 @@ class ProveedorController extends Controller
                 "message" => "Listado de proveedores",
                 "status" => 200,
                 "data" => $proveedores
-            ]);
-        } catch (\Exception $e) {
+            ], 200);
+        } catch (Exception $e) {
             return response()->json([
                 "message" => "Error al obtener los proveedores",
                 "status" => 500
@@ -40,19 +41,36 @@ class ProveedorController extends Controller
 
             return response()->json([
                 "message" => "Proveedor creado correctamente",
-                "proveedor" => $proveedor
+                "status" => 201,
+                "data" => $proveedor
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear el proveedor",
+                "status" => 500
+            ], 500);
         }
     }
 
     public function show($id)
     {
         try {
-            return response()->json(Proveedor::findOrFail($id), 200);
+            $proveedor = Proveedor::findOrFail($id);
+            return response()->json([
+                "message" => "Información del proveedor",
+                "status" => 200,
+                "data" => $proveedor
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Proveedor no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Proveedor no encontrado",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -71,12 +89,24 @@ class ProveedorController extends Controller
 
             return response()->json([
                 "message" => "Proveedor actualizado correctamente",
-                "proveedor" => $proveedor
+                "status" => 200,
+                "data" => $proveedor
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Proveedor no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Proveedor no encontrado",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar el proveedor",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -86,9 +116,20 @@ class ProveedorController extends Controller
             $proveedor = Proveedor::findOrFail($id);
             $proveedor->delete();
 
-            return response()->json(["message" => "Proveedor eliminado correctamente"], 200);
+            return response()->json([
+                "message" => "Proveedor eliminado correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Proveedor no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Proveedor no encontrado",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar el proveedor",
+                "status" => 500
+            ], 500);
         }
     }
 }

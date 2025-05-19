@@ -7,12 +7,25 @@ use App\Models\Pedido;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class PedidosController extends Controller
 {
     public function index()
     {
-        return response()->json(Pedido::all(), 200);
+        try {
+            $pedidos = Pedido::all();
+            return response()->json([
+                "message" => "Listado de pedidos",
+                "status" => 200,
+                "data" => $pedidos
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al obtener los datos",
+                "status" => 500
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -28,19 +41,36 @@ class PedidosController extends Controller
 
             return response()->json([
                 "message" => "Pedido creado correctamente",
-                "pedido" => $pedido
+                "status" => 201,
+                "data" => $pedido
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear el pedido",
+                "status" => 500
+            ], 500);
         }
     }
 
     public function show($id)
     {
         try {
-            return response()->json(Pedido::findOrFail($id), 200);
+            $pedido = Pedido::findOrFail($id);
+            return response()->json([
+                "message" => "Información del pedido",
+                "status" => 200,
+                "data" => $pedido
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Pedido no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Pedido no encontrado",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -59,12 +89,24 @@ class PedidosController extends Controller
 
             return response()->json([
                 "message" => "Pedido actualizado correctamente",
-                "pedido" => $pedido
+                "status" => 200,
+                "data" => $pedido
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Pedido no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Pedido no encontrado",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar el pedido",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -74,9 +116,20 @@ class PedidosController extends Controller
             $pedido = Pedido::findOrFail($id);
             $pedido->delete();
 
-            return response()->json(["message" => "Pedido eliminado correctamente"], 200);
+            return response()->json([
+                "message" => "Pedido eliminado correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Pedido no encontrado", "status" => 404], 404);
+            return response()->json([
+                "message" => "Pedido no encontrado",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar el pedido",
+                "status" => 500
+            ], 500);
         }
     }
 }

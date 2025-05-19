@@ -8,18 +8,30 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
+use Exception;
 
 class ProductosController extends Controller
 {
     public function index()
     {
-        $productos = Producto::all()->map(function ($producto) {
-            $producto->imagen_url = $producto->imagen 
-                ? Storage::disk('public')->url('imagenes/' . $producto->imagen)
-                : null;
-            return $producto;
-        });
-        return response()->json($productos, 200);
+        try {
+            $productos = Producto::all()->map(function ($producto) {
+                $producto->imagen_url = $producto->imagen 
+                    ? Storage::disk('public')->url('imagenes/' . $producto->imagen)
+                    : null;
+                return $producto;
+            });
+            return response()->json([
+                "message" => "Listado de productos",
+                "status" => 200,
+                "data" => $productos
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al obtener los productos",
+                "status" => 500
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -44,10 +56,19 @@ class ProductosController extends Controller
 
             return response()->json([
                 "message" => "Producto creado correctamente",
-                "producto" => $producto
+                "status" => 201,
+                "data" => $producto
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al crear el producto",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -58,9 +79,16 @@ class ProductosController extends Controller
             $producto->imagen_url = $producto->imagen 
                 ? Storage::disk('public')->url('imagenes/' . $producto->imagen)
                 : null;
-            return response()->json($producto, 200);
+            return response()->json([
+                "message" => "Información del producto",
+                "status" => 200,
+                "data" => $producto
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Producto no encontrado"], 404);
+            return response()->json([
+                "message" => "Producto no encontrado",
+                "status" => 404
+            ], 404);
         }
     }
 
@@ -93,12 +121,24 @@ class ProductosController extends Controller
 
             return response()->json([
                 "message" => "Producto actualizado correctamente",
-                "producto" => $producto
+                "status" => 200,
+                "data" => $producto
             ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Producto no encontrado"], 404);
+            return response()->json([
+                "message" => "Producto no encontrado",
+                "status" => 404
+            ], 404);
         } catch (ValidationException $e) {
-            return response()->json(["errors" => $e->errors()], 422);
+            return response()->json([
+                "message" => $e->getMessage(),
+                "status" => 422
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al actualizar el producto",
+                "status" => 500
+            ], 500);
         }
     }
 
@@ -111,9 +151,20 @@ class ProductosController extends Controller
             }
             $producto->delete();
 
-            return response()->json(["message" => "Producto eliminado correctamente"], 200);
+            return response()->json([
+                "message" => "Producto eliminado correctamente",
+                "status" => 200
+            ], 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(["message" => "Producto no encontrado"], 404);
+            return response()->json([
+                "message" => "Producto no encontrado",
+                "status" => 404
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Error al eliminar el producto",
+                "status" => 500
+            ], 500);
         }
     }
 }
