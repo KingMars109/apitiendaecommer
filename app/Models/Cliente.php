@@ -15,10 +15,16 @@ class Cliente extends Model
         'nombre',
         'email',
         'telefono',
+        'user_id'
     ];
 
     public function pedidos()
     {
         return $this->hasMany(Pedido::class, 'id_cliente');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

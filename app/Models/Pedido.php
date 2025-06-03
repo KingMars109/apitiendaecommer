@@ -14,7 +14,8 @@ class Pedido extends Model
     protected $fillable = [
         'id_cliente',
         'fecha_pedido',
-        'total'
+        'total',
+        'estado'
     ];
 
     public function cliente()

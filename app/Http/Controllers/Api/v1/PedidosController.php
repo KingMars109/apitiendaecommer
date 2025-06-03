@@ -14,9 +14,24 @@ class PedidosController extends Controller
     public function index()
     {
         try {
-            $pedidos = Pedido::all();
+            // Obtener pedidos solo del cliente autenticado
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+            $pedidos = Pedido::where('id_cliente', $cliente->id_cliente)->get();
             return response()->json([
-                "message" => "Listado de pedidos",
+                "message" => "Listado de pedidos del cliente autenticado",
                 "status" => 200,
                 "data" => $pedidos
             ], 200);
@@ -31,16 +46,37 @@ class PedidosController extends Controller
     public function store(Request $request)
     {
         try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            // Validar datos mínimos para crear pedido
             $validatedData = $request->validate([
-                'id_cliente' => 'required|exists:clientes,id',
                 'fecha_pedido' => 'required|date',
                 'total' => 'required|numeric|min:0',
             ]);
 
-            $pedido = Pedido::create($validatedData);
+            // Crear pedido con estado activo y cliente autenticado
+            $pedido = Pedido::create([
+                'id_cliente' => $cliente->id_cliente,
+                'fecha_pedido' => $validatedData['fecha_pedido'],
+                'total' => $validatedData['total'],
+                'estado' => 'activo',
+            ]);
 
             return response()->json([
-                "message" => "Pedido creado correctamente",
+                "message" => "Pedido (carrito) creado correctamente",
                 "status" => 201,
                 "data" => $pedido
             ], 201);
@@ -60,7 +96,32 @@ class PedidosController extends Controller
     public function show($id)
     {
         try {
-            $pedido = Pedido::findOrFail($id);
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            $pedido = Pedido::where('id', $id)
+                            ->where('id_cliente', $cliente->id_cliente)
+                            ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "Pedido no encontrado o no pertenece al cliente",
+                    "status" => 404
+                ], 404);
+            }
+
             return response()->json([
                 "message" => "Información del pedido",
                 "status" => 200,
@@ -77,12 +138,36 @@ class PedidosController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $pedido = Pedido::findOrFail($id);
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            $pedido = Pedido::where('id', $id)
+                            ->where('id_cliente', $cliente->id_cliente)
+                            ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "Pedido no encontrado o no pertenece al cliente",
+                    "status" => 404
+                ], 404);
+            }
 
             $validatedData = $request->validate([
-                'id_cliente' => 'required|exists:clientes,id',
                 'fecha_pedido' => 'required|date',
                 'total' => 'required|numeric|min:0',
+                'estado' => 'required|string'
             ]);
 
             $pedido->update($validatedData);
@@ -113,7 +198,32 @@ class PedidosController extends Controller
     public function destroy($id)
     {
         try {
-            $pedido = Pedido::findOrFail($id);
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            $pedido = Pedido::where('id', $id)
+                            ->where('id_cliente', $cliente->id_cliente)
+                            ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "Pedido no encontrado o no pertenece al cliente",
+                    "status" => 404
+                ], 404);
+            }
+
             $pedido->delete();
 
             return response()->json([

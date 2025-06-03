@@ -2,13 +2,19 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\CartController;
+
 use App\Http\Controllers\Api\V1\CarteraElectronicaController;
 use App\Http\Controllers\Api\V1\TransaccionController;
 use App\Http\Controllers\Api\V1\MetodoPagoController;
-
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CategoriaController;
 
 Route::prefix('v1')->group(function () {
+    // Rutas para el controlador CategoriaController
+    Route::apiResource('categorias', CategoriaController::class);
+    Route::get('categorias/{id}/productos', [CategoriaController::class, 'productos']);
+
     // Rutas para el controlador EmpleadosController
     Route::apiResource('empleados', 'App\Http\Controllers\Api\V1\EmpleadosController');
     Route::post('empleados/{id}', 'App\Http\Controllers\Api\V1\EmpleadosController@update');
@@ -51,8 +57,11 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         // Otras rutas protegidas aquí
-    });
 
+        // Rutas para carrito
+        Route::get('/cart', [\App\Http\Controllers\Api\V1\CartController::class, 'getCart']);
+        Route::put('/cart', [\App\Http\Controllers\Api\V1\CartController::class, 'saveCart']);
+    });    
     Route::apiResource('carteras-electronicas', CarteraElectronicaController::class);
     Route::apiResource('transacciones', TransaccionController::class);
     Route::apiResource('metodos-pago', MetodoPagoController::class);

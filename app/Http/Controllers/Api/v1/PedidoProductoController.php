@@ -31,13 +31,40 @@ class PedidoProductoController extends Controller
     public function store(Request $request)
     {
         try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
             $validatedData = $request->validate([
                 'id_pedido' => 'required|integer|exists:pedidos,id',
                 'id_producto' => 'required|integer|exists:productos,id',
                 'cantidad' => 'required|integer|min:1',
             ]);
 
-            $pedidoProducto = PedidoProducto::create($validatedData);
+            // Validar que el pedido pertenece al cliente autenticado
+            $pedido = \App\Models\Pedido::where('id', $validatedData['id_pedido'])
+                                        ->where('id_cliente', $cliente->id_cliente)
+                                        ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "El pedido no pertenece al cliente autenticado",
+                    "status" => 403
+                ], 403);
+            }
+
+            $pedidoProducto = \App\Models\PedidoProducto::create($validatedData);
 
             return response()->json([
                 "message" => "PedidoProducto creado correctamente",
@@ -79,9 +106,43 @@ class PedidoProductoController extends Controller
     public function update(Request $request, $id_pedido, $id_producto)
     {
         try {
-            $pedidoProducto = PedidoProducto::where('id_pedido', $id_pedido)
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            $pedidoProducto = \App\Models\PedidoProducto::where('id_pedido', $id_pedido)
                                             ->where('id_producto', $id_producto)
-                                            ->firstOrFail();
+                                            ->first();
+
+            if (!$pedidoProducto) {
+                return response()->json([
+                    "message" => "PedidoProducto no encontrado",
+                    "status" => 404
+                ], 404);
+            }
+
+            // Validar que el pedido pertenece al cliente autenticado
+            $pedido = \App\Models\Pedido::where('id', $pedidoProducto->id_pedido)
+                                        ->where('id_cliente', $cliente->id_cliente)
+                                        ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "El pedido no pertenece al cliente autenticado",
+                    "status" => 403
+                ], 403);
+            }
             
             $validatedData = $request->validate([
                 'cantidad' => 'required|integer|min:1',
@@ -115,9 +176,43 @@ class PedidoProductoController extends Controller
     public function destroy($id_pedido, $id_producto)
     {
         try {
-            $pedidoProducto = PedidoProducto::where('id_pedido', $id_pedido)
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    "message" => "No autenticado",
+                    "status" => 401
+                ], 401);
+            }
+            $cliente = $user->cliente;
+            if (!$cliente) {
+                return response()->json([
+                    "message" => "Cliente no encontrado para el usuario",
+                    "status" => 404
+                ], 404);
+            }
+
+            $pedidoProducto = \App\Models\PedidoProducto::where('id_pedido', $id_pedido)
                                             ->where('id_producto', $id_producto)
-                                            ->firstOrFail();
+                                            ->first();
+
+            if (!$pedidoProducto) {
+                return response()->json([
+                    "message" => "PedidoProducto no encontrado",
+                    "status" => 404
+                ], 404);
+            }
+
+            // Validar que el pedido pertenece al cliente autenticado
+            $pedido = \App\Models\Pedido::where('id', $pedidoProducto->id_pedido)
+                                        ->where('id_cliente', $cliente->id_cliente)
+                                        ->first();
+
+            if (!$pedido) {
+                return response()->json([
+                    "message" => "El pedido no pertenece al cliente autenticado",
+                    "status" => 403
+                ], 403);
+            }
             
             $pedidoProducto->delete();
             
